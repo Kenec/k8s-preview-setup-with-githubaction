@@ -10,11 +10,13 @@ jobs:
     runs-on: [ubuntu-latest]
     steps: 
       - name: deploy
+        id: deploy
         if: contains(github.event.comment.body, '/preview')
         run: |
-         echo "Deployed the commit ${GITHUB_SHA}"
+         echo "Deployed the commit ${{ GITHUB_SHA }}"
          
       - name: post the preview URL
+        needs: deploy
         uses: actions/github-script@v4
         with:
           script: |
@@ -22,7 +24,7 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: 'Preview URL: http://test-url-${GITHUB_SHA}.com'
+              body: 'Preview URL: http://test-url-${{ GITHUB_SHA }}.com'
             })
 
       - name: delete deployment
