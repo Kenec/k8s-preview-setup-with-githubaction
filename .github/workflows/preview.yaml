@@ -1,0 +1,31 @@
+# The idea is to deploy the changes of a commit in the branch and review these changes before the code is merged to the main (prod) branch
+name: Preview
+on:
+  issue_comment:                                     
+    types: [created, deleted]
+
+jobs:
+  deploy:
+    if: contains(github.event.comment.html_url, '/pull/')
+    runs-on: [ubuntu-latest]
+    steps: 
+      - name: deploy
+        if: contains(github.event.comment.body, '/preview')
+        run: |
+         echo "Deployed the commit ${GITHUB_SHA}"
+         
+      - name: post the preview URL
+        uses: actions/github-script@v4
+        with:
+          script: |
+            github.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: 'Preview URL: http://test-url-${GITHUB_SHA}.com'
+            })
+
+      - name: delete deployment
+        if: contains(github.event.comment.body, '/remove-preview')
+        run: |
+         echo "Deployment for ${GITHUB_SHA} deleted"
